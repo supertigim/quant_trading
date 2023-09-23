@@ -110,3 +110,10 @@ venv.bak/
 dmypy.json
 
 .vscode
+*log*
+
+.env*
+
+.DS_Store
+
+*.sqlite

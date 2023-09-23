@@ -1,4 +1,5 @@
 # -*- coding: utf-8 -*- 
+#import PyQt5
 from pykiwoom.kiwoom import Kiwoom
 
 def main():

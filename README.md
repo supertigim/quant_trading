@@ -1,17 +1,30 @@
+# Introduction  
 
-## Introduction  
+ Playground for quant trading. 
 
-키움증권 API기반 자동 퀀트 트레이딩 프로그램  
+## Environments
+* Python installer: pyenv
+* Python virtual environment: poetry
+* python: 3.11
+* Containerization: Docker
+* SCM : github
+* Database: sqlite3
+* Code editor : VSCode with Github Copilot, Jupyter, Pylance, Python, and SQLite
 
-## Requirement  
+## How to run jupyter notebook
 
-- 윈도우즈 only
-- 아나콘다(or 미니콘다) **32bit**  
-- 키움 OpenAPI 
+```bash
+$ docker-compose up 
+
+# Go to http://localhost:8888
+# Token password is '1'  <- See the jupyter_config/jupyter_notebook_config.json
+```
+
+## Jupyter notebooks
+
+* notebooks/data_korea.ipynb : 국내(Kospi) 주식 데이터 수집, DB 생성/저장, etc
 
 
-## Reference  
+ ## Reference
 
-- [퀄트투자를 위한 키움증권 API 웹북](https://wikidocs.net/book/1173)  
-- [초보가 시작한 트레이드 프로그래밍](https://blog.naver.com/o12486vs2/221940680071)  
-- [pykiwoom 라이브러리](wikidocs.net/book/1173)  
+ - [국내 주식 데이터 수집](https://github.com/hyunyulhenry/quant_py/blob/main/data_korea.ipynb)

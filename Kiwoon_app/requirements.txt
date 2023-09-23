@@ -1,0 +1,4 @@
+pywin32
+pyautowin
+pykiwoom
+pyqt5
