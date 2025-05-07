@@ -16,6 +16,9 @@ app = FastAPI(title="Minimal Storage Test App")
 app.add_middleware(AuthenticationMiddleware)
 app.add_middleware(SessionMiddleware, secret_key=settings.SECRET_KEY)
 
+# 다크 모드 설정
+ui.dark_mode(True)
+
 # 이 테스트에서는 다른 미들웨어나 API 라우터를 추가하지 않습니다.
 
 
@@ -24,14 +27,20 @@ app.add_middleware(SessionMiddleware, secret_key=settings.SECRET_KEY)
 def minimal_home_page():
     logger_main.info("Accessing MINIMAL home_page (/) triggering storage test")
 
-    with ui.card().classes("w-full max-w-2xl mx-auto mt-8"):
-        ui.label("Welcome to Quant Trading").classes("text-2xl font-bold mb-4")
+    with ui.card().classes("w-full max-w-2xl mx-auto mt-8 bg-gray-800"):
+        ui.label("Welcome to Quant Trading").classes(
+            "text-2xl font-bold mb-4 text-white"
+        )
 
         # User info section
-        with ui.card().classes("w-full mb-4"):
-            ui.label("User Information").classes("text-xl font-semibold mb-2")
+        with ui.card().classes("w-full mb-4 bg-gray-700"):
+            ui.label("User Information").classes(
+                "text-xl font-semibold mb-2 text-white"
+            )
 
-            user_info = ui.label("Loading...").classes("text-gray-600")
+            user_info = ui.label("Loading...").classes(
+                "text-gray-300 whitespace-pre-line"
+            )
 
             def load_user_info():
                 # Initialize storage if not exists
@@ -73,7 +82,9 @@ def minimal_home_page():
             ui.notify("Logged out successfully", type="positive")
             ui.navigate.to("/login")
 
-        ui.button("Logout", on_click=handle_logout).classes("bg-red-500 text-white")
+        ui.button("Logout", on_click=handle_logout).classes(
+            "bg-red-500 hover:bg-red-600 text-white"
+        )
 
 
 # 로그인 페이지 등록
@@ -90,7 +101,12 @@ def register_page():
 
 # 3. NiceGUI를 FastAPI 앱과 함께 실행
 # storage_secret은 ui.storage가 초기화되는 데 매우 중요합니다.
-ui.run_with(app, title="Minimal Storage Test", storage_secret=settings.SECRET_KEY)
+ui.run_with(
+    app,
+    title="Minimal Storage Test",
+    storage_secret=settings.SECRET_KEY,
+    dark=True,  # 다크 모드 기본값 설정
+)
 
 logger_main.info(
     "MINIMAL FastAPI app setup complete, NiceGUI integrated with ui.run_with."
