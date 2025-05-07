@@ -1,12 +1,35 @@
-version: '3.8'
+version: "3.8"
 
 services:
-
-  jupyter:
-    image: jupyter/minimal-notebook
-    volumes:
-      - .:/home/jovyan/work
-      - ./jupyter_config/configure_environment.sh:/usr/local/bin/before-notebook.d/configure_environment.sh
-      - ./jupyter_config/jupyter_notebook_config.json:/home/jovyan/.jupyter/jupyter_notebook_config.json
+  app:
+    build:
+      context: .
+      dockerfile: docker/Dockerfile.dev
     ports:
-      - 8888:8888
+      - "${APP_PORT}:8080"
+    volumes:
+      - .:/app
+      - /app/.venv
+      - /app/__pycache__
+    environment:
+      - DATABASE_URL=postgresql://${POSTGRES_USER}:${POSTGRES_PASSWORD}@${POSTGRES_HOST}:${POSTGRES_PORT}/${POSTGRES_DB}
+      - APP_HOST=${APP_HOST}
+      - APP_PORT=${APP_PORT}
+      - PYTHONUNBUFFERED=1
+      - WATCHFILES_FORCE_POLLING=1
+    depends_on:
+      - db
+
+  db:
+    image: postgres:16
+    environment:
+      - POSTGRES_USER=${POSTGRES_USER}
+      - POSTGRES_PASSWORD=${POSTGRES_PASSWORD}
+      - POSTGRES_DB=${POSTGRES_DB}
+    volumes:
+      - postgres_data:/var/lib/postgresql/data
+    ports:
+      - "${POSTGRES_PORT}:5432"
+
+volumes:
+  postgres_data:
