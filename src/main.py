@@ -1,49 +1,97 @@
 from fastapi import FastAPI
-from fastapi.middleware.cors import CORSMiddleware
-from nicegui import ui, app
+from nicegui import ui
+import logging
 from src.core.config import settings
-from src.api.v1.api import api_router
-from src.pages.register import create_register_page
+from src.core.middleware import AuthenticationMiddleware
+from starlette.middleware.sessions import SessionMiddleware
 from src.pages.login import create_login_page
-from src.pages.main import create_main_page
+from src.pages.register import create_register_page
+
+logger_main = logging.getLogger("main_debug_minimal")
+
+# 1. FastAPI 앱 생성
+app = FastAPI(title="Minimal Storage Test App")
+
+# 미들웨어 추가 (순서 중요: 나중에 추가된 미들웨어가 먼저 실행됨)
+app.add_middleware(AuthenticationMiddleware)
+app.add_middleware(SessionMiddleware, secret_key=settings.SECRET_KEY)
+
+# 이 테스트에서는 다른 미들웨어나 API 라우터를 추가하지 않습니다.
 
 
-def create_app() -> FastAPI:
-    app = FastAPI(
-        title=settings.PROJECT_NAME,
-        version=settings.VERSION,
-        openapi_url=f"{settings.API_V1_STR}/openapi.json",
-    )
+# 2. NiceGUI 페이지 정의
+@ui.page("/")
+def minimal_home_page():
+    logger_main.info("Accessing MINIMAL home_page (/) triggering storage test")
 
-    # Set CORS middleware
-    app.add_middleware(
-        CORSMiddleware,
-        allow_origins=settings.BACKEND_CORS_ORIGINS,
-        allow_credentials=True,
-        allow_methods=["*"],
-        allow_headers=["*"],
-    )
+    with ui.card().classes("w-full max-w-2xl mx-auto mt-8"):
+        ui.label("Welcome to Quant Trading").classes("text-2xl font-bold mb-4")
 
-    # Include API router
-    app.include_router(api_router, prefix=settings.API_V1_STR)
+        # User info section
+        with ui.card().classes("w-full mb-4"):
+            ui.label("User Information").classes("text-xl font-semibold mb-2")
 
-    # Create the main page
-    @ui.page("/")
-    def home():
-        create_main_page()
+            user_info = ui.label("Loading...").classes("text-gray-600")
 
-    @ui.page("/register")
-    def register():
-        create_register_page()
+            def load_user_info():
+                # Initialize storage if not exists
+                if not hasattr(ui, "storage"):
+                    ui.storage = {}
+                if "user" not in ui.storage:
+                    ui.storage["user"] = {}
 
-    @ui.page("/login")
-    def login():
-        create_login_page()
+                user = ui.storage.get("user", {}).get("user")
+                if user:
+                    username = user.get("username", "N/A")
+                    email = user.get("email", "N/A")
+                    user_id = user.get("id", "N/A")
 
-    # Mount NiceGUI
-    ui.run_with(app)
+                    user_info_text = f"Username: {username}\n"
+                    if email != "N/A":
+                        user_info_text += f"Email: {email}\n"
+                    if user_id != "N/A":
+                        user_info_text += f"User ID: {user_id}"
 
-    return app
+                    user_info.set_text(user_info_text.strip())
+                else:
+                    user_info.set_text("User not logged in")
+
+            # Load user info immediately
+            load_user_info()
+
+        # Logout button
+        async def handle_logout():
+            # Initialize storage if not exists
+            if not hasattr(ui, "storage"):
+                ui.storage = {}
+            if "user" not in ui.storage:
+                ui.storage["user"] = {}
+
+            # Clear ui.storage
+            ui.storage["user"] = {}
+
+            ui.notify("Logged out successfully", type="positive")
+            ui.navigate.to("/login")
+
+        ui.button("Logout", on_click=handle_logout).classes("bg-red-500 text-white")
 
 
-app = create_app()
+# 로그인 페이지 등록
+@ui.page("/login")
+def login_page():
+    create_login_page()
+
+
+# 회원가입 페이지 등록
+@ui.page("/register")
+def register_page():
+    create_register_page()
+
+
+# 3. NiceGUI를 FastAPI 앱과 함께 실행
+# storage_secret은 ui.storage가 초기화되는 데 매우 중요합니다.
+ui.run_with(app, title="Minimal Storage Test", storage_secret=settings.SECRET_KEY)
+
+logger_main.info(
+    "MINIMAL FastAPI app setup complete, NiceGUI integrated with ui.run_with."
+)

@@ -131,3 +131,7 @@ htmlcov/
 !.env.example
 
 *.sqlite
+
+# Exclude specific log files but keep Python files
+*.log
+!src/**/*.py

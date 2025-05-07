@@ -55,13 +55,20 @@ def main():
     )
     parser.add_argument(
         "environment",
-        choices=["dev", "staging", "prod"],
+        choices=["dev", "staging", "prod", "all"],
         default="dev",
         help="Environment to export requirements for (default: dev)",
     )
 
     args = parser.parse_args()
-    export_requirements(args.environment)
+
+    if args.environment == "all":
+        print("Exporting requirements for all environments...")
+        for env in ["dev", "staging", "prod"]:
+            export_requirements(env)
+        print("All requirements files exported successfully!")
+    else:
+        export_requirements(args.environment)
 
 
 if __name__ == "__main__":
