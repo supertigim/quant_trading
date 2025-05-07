@@ -1,35 +1,24 @@
-version: "3.8"
-
 services:
   app:
-    build:
-      context: .
-      dockerfile: docker/Dockerfile.dev
+    build: .
     ports:
-      - "${APP_PORT}:8080"
+      - "8080:8080"
+    env_file:
+      - .env
     volumes:
       - .:/app
-      - /app/.venv
-      - /app/__pycache__
-    environment:
-      - DATABASE_URL=postgresql://${POSTGRES_USER}:${POSTGRES_PASSWORD}@${POSTGRES_HOST}:${POSTGRES_PORT}/${POSTGRES_DB}
-      - APP_HOST=${APP_HOST}
-      - APP_PORT=${APP_PORT}
-      - PYTHONUNBUFFERED=1
-      - WATCHFILES_FORCE_POLLING=1
     depends_on:
       - db
+    command: uvicorn src.main:app --host 0.0.0.0 --port 8080 --reload
 
   db:
     image: postgres:16
-    environment:
-      - POSTGRES_USER=${POSTGRES_USER}
-      - POSTGRES_PASSWORD=${POSTGRES_PASSWORD}
-      - POSTGRES_DB=${POSTGRES_DB}
+    env_file:
+      - .env
+    ports:
+      - "5432:5432"
     volumes:
       - postgres_data:/var/lib/postgresql/data
-    ports:
-      - "${POSTGRES_PORT}:5432"
 
 volumes:
   postgres_data:

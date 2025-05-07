@@ -1,6 +1,8 @@
 from datetime import datetime
 from sqlalchemy import Column, Integer, DateTime
-from src.db.session import Base
+from sqlalchemy.ext.declarative import declarative_base
+
+Base = declarative_base()
 
 
 class BaseModel(Base):

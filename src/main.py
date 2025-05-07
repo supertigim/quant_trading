@@ -1,8 +1,11 @@
 from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
-from nicegui import ui
+from nicegui import ui, app
 from src.core.config import settings
 from src.api.v1.api import api_router
+from src.pages.register import create_register_page
+from src.pages.login import create_login_page
+from src.pages.main import create_main_page
 
 
 def create_app() -> FastAPI:
@@ -26,11 +29,16 @@ def create_app() -> FastAPI:
 
     # Create the main page
     @ui.page("/")
-    def main():
-        ui.label(settings.PROJECT_NAME).classes("text-h4 q-mb-md")
-        with ui.card().classes("w-full"):
-            ui.label(f"Welcome to {settings.PROJECT_NAME}").classes("text-h5")
-            ui.label("This is a basic setup with NiceGUI and PostgreSQL.")
+    def home():
+        create_main_page()
+
+    @ui.page("/register")
+    def register():
+        create_register_page()
+
+    @ui.page("/login")
+    def login():
+        create_login_page()
 
     # Mount NiceGUI
     ui.run_with(app)

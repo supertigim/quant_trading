@@ -1,10 +1,11 @@
 [tool.poetry]
 name = "quant-trading"
 version = "0.1.0"
-description = "Quantitative Trading System with NiceGUI and PostgreSQL"
+description = "Quantitative Trading System with PostgreSQL"
 authors = ["Your Name <your.email@example.com>"]
-readme = "README.md"
-packages = [{include = "src"}]
+packages = [
+    { include = "src" }
+]
 
 [tool.poetry.dependencies]
 python = "^3.11"
@@ -17,28 +18,20 @@ psycopg2-binary = "^2.9.9"
 pydantic = "^2.6.1"
 pydantic-settings = "^2.1.0"
 alembic = "^1.13.1"
-psutil = "^5.9.8"
+python-jose = {extras = ["cryptography"], version = "^3.3.0"}
+passlib = {extras = ["bcrypt"], version = "^1.7.4"}
+python-multipart = "^0.0.9"  # for form data parsing
 
 [tool.poetry.group.dev.dependencies]
+pytest = "^8.0.0"
 black = "^24.1.1"
 isort = "^5.13.2"
 flake8 = "^7.0.0"
 mypy = "^1.8.0"
 
-[tool.poetry.group.test.dependencies]
-pytest = "^8.0.0"
-pytest-cov = "^4.1.0"
-pytest-asyncio = "^0.23.5"
-httpx = "^0.26.0"
-faker = "^22.6.0"
-
 [build-system]
 requires = ["poetry-core"]
 build-backend = "poetry.core.masonry.api"
-
-[tool.poetry.scripts]
-export-requirements = "scripts.export_requirements:main"
-post-install = "scripts.export_requirements:post_install"
 
 [tool.black]
 line-length = 88
@@ -56,6 +49,10 @@ warn_return_any = true
 warn_unused_configs = true
 disallow_untyped_defs = true
 disallow_incomplete_defs = true
+
+[tool.poetry.scripts]
+export-requirements = "scripts.export_requirements:main"
+post-install = "scripts.export_requirements:post_install"
 
 [tool.pytest.ini_options]
 testpaths = ["tests"]

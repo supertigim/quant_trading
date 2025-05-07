@@ -38,14 +38,14 @@ Alembic을 사용하여 데이터베이스 마이그레이션을 관리합니다
 
 ```bash
 # 마이그레이션 파일 생성
-poetry run alembic revision --autogenerate -m "migration message"
+alembic revision --autogenerate -m "migration message"
 
 # 마이그레이션 적용
-poetry run alembic upgrade head
+alembic upgrade head
 
 # 마이그레이션 롤백
-poetry run alembic downgrade -1  # 한 단계 롤백
-poetry run alembic downgrade base  # 처음으로 롤백
+alembic downgrade -1  # 한 단계 롤백
+alembic downgrade base  # 처음으로 롤백
 ```
 
 ### 2. 모델 정의
@@ -178,7 +178,7 @@ poetry install
 
 3. 애플리케이션 실행:
 ```bash
-poetry run python src/main.py
+python src/main.py
 ```
 
 ## requirements.txt 생성 방법
@@ -196,13 +196,13 @@ Poetry를 사용하여 환경별 requirements.txt를 생성할 수 있습니다:
 2. 수동으로 특정 환경의 requirements 파일만 생성:
 ```bash
 # 개발 환경용
-poetry run export-requirements dev
+export-requirements dev
 
 # 스테이징 환경용
-poetry run export-requirements staging
+export-requirements staging
 
 # 프로덕션 환경용
-poetry run export-requirements prod
+export-requirements prod
 ```
 
 각 환경별 특징:
@@ -276,16 +276,16 @@ SECRET_KEY=your-secret-key-here
 2. 테스트
    - pytest를 사용한 테스트 실행
    ```bash
-   poetry run pytest
+   pytest
    ```
 
 3. 코드 포맷팅
    ```bash
-   poetry run black .
-   poetry run isort .
+   black .
+   isort .
    ```
 
 4. 코드 검사
    ```bash
-   poetry run flake8
+   flake8
    ```

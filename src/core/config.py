@@ -1,51 +1,55 @@
-from typing import Any, Dict, Optional
+from typing import Any, Dict, Optional, List
 from pydantic_settings import BaseSettings
-from pydantic import PostgresDsn, validator
+from pydantic import PostgresDsn, validator, field_validator
 from pathlib import Path
 import os
+import json
 
 
 class Settings(BaseSettings):
     # Project Info
-    PROJECT_NAME: str = "Quantitative Trading System"
-    VERSION: str = "0.1.0"
-    API_V1_STR: str = "/api/v1"
+    PROJECT_NAME: str
+    VERSION: str
+    API_V1_STR: str
 
     # Security
-    SECRET_KEY: str = os.getenv("SECRET_KEY", "your-secret-key-here")
-    ACCESS_TOKEN_EXPIRE_MINUTES: int = 60 * 24 * 8  # 8 days
+    SECRET_KEY: str
+    ALGORITHM: str
+    ACCESS_TOKEN_EXPIRE_MINUTES: int
 
     # Database
-    POSTGRES_USER: str = os.getenv("POSTGRES_USER", "postgres")
-    POSTGRES_PASSWORD: str = os.getenv("POSTGRES_PASSWORD", "postgres")
-    POSTGRES_DB: str = os.getenv("POSTGRES_DB", "quant_trading")
-    POSTGRES_HOST: str = os.getenv("POSTGRES_HOST", "db")
-    POSTGRES_PORT: str = os.getenv("POSTGRES_PORT", "5432")
-    DATABASE_URL: Optional[PostgresDsn] = None
-
-    @validator("DATABASE_URL", pre=True)
-    def assemble_db_connection(cls, v: Optional[str], values: Dict[str, Any]) -> Any:
-        if isinstance(v, str):
-            return v
-        return PostgresDsn.build(
-            scheme="postgresql",
-            username=values.get("POSTGRES_USER"),
-            password=values.get("POSTGRES_PASSWORD"),
-            host=values.get("POSTGRES_HOST"),
-            port=values.get("POSTGRES_PORT"),
-            path=f"/{values.get('POSTGRES_DB') or ''}",
-        )
+    POSTGRES_HOST: str
+    POSTGRES_PORT: str
+    POSTGRES_USER: str
+    POSTGRES_PASSWORD: str
+    POSTGRES_DB: str
+    SQLALCHEMY_DATABASE_URI: Optional[str] = None
 
     # Application
-    APP_HOST: str = os.getenv("APP_HOST", "0.0.0.0")
-    APP_PORT: int = int(os.getenv("APP_PORT", "8080"))
+    APP_HOST: str
+    APP_PORT: int
 
     # CORS
-    BACKEND_CORS_ORIGINS: list[str] = ["*"]
+    BACKEND_CORS_ORIGINS: List[str]
+
+    @field_validator("BACKEND_CORS_ORIGINS", mode="before")
+    def assemble_cors_origins(cls, v: str | List[str]) -> List[str]:
+        if isinstance(v, str):
+            return json.loads(v)
+        return v
 
     class Config:
         case_sensitive = True
-        env_file = Path(__file__).parent.parent.parent / ".env"
+        env_file = ".env"
+        extra = "allow"  # Allow extra fields in environment variables
+
+    def __init__(self, **kwargs):
+        super().__init__(**kwargs)
+        if not self.SQLALCHEMY_DATABASE_URI:
+            self.SQLALCHEMY_DATABASE_URI = (
+                f"postgresql://{self.POSTGRES_USER}:{self.POSTGRES_PASSWORD}"
+                f"@{self.POSTGRES_HOST}:{self.POSTGRES_PORT}/{self.POSTGRES_DB}"
+            )
 
 
 settings = Settings()
