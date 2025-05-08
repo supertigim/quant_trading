@@ -11,6 +11,9 @@ class StockBase(BaseModel):
         max_length=2,
         description="2-digit country code (e.g., US, KR, JP)",
     )
+    market: Optional[str] = Field(
+        None, description="Market type (e.g., KOSPI, KOSDAQ, NYSE, NASDAQ)"
+    )
 
 
 class StockCreate(StockBase):
@@ -23,6 +26,7 @@ class StockUpdate(BaseModel):
     country: Optional[str] = Field(
         None, min_length=2, max_length=2, description="2-digit country code"
     )
+    market: Optional[str] = Field(None, description="Market type")
 
 
 class StockInDB(StockBase):

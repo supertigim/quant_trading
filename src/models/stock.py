@@ -11,6 +11,9 @@ class Stock(Base):
     country = Column(
         String(2), nullable=False, index=True
     )  # 2-digit country code (e.g., US, KR, JP)
+    market = Column(
+        String, nullable=True, index=True
+    )  # Market type (e.g., KOSPI, KOSDAQ, NYSE, NASDAQ)
 
     def __repr__(self):
         return f"<Stock {self.ticker} ({self.name})>"
