@@ -25,6 +25,9 @@ python-multipart = "^0.0.9"  # for form data parsing
 email-validator = "^2.1.0.post1"  # for email validation
 httpx = "^0.27.0"
 bcrypt = "4.0.1"
+yfinance = "^0.2.59"
+pandas = "^2.2.3"
+finance-datareader = "^0.9.96"
 
 [tool.poetry.group.dev.dependencies]
 black = ">=24.1.1"

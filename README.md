@@ -203,6 +203,9 @@ export-requirements staging
 
 # 프로덕션 환경용
 export-requirements prod
+
+# all
+export-requirements all
 ```
 
 각 환경별 특징:
