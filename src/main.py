@@ -7,6 +7,7 @@ from starlette.middleware.sessions import SessionMiddleware
 from src.pages.login import create_login_page
 from src.pages.register import create_register_page
 from src.pages.stocks import create_stocks_page
+from src.pages.test import create_test_page
 
 logger_main = logging.getLogger("main_debug_minimal")
 
@@ -88,6 +89,9 @@ def minimal_home_page():
             ui.button("주식 관리", on_click=lambda: ui.navigate.to("/stocks")).classes(
                 "bg-blue-500 hover:bg-blue-600 text-white"
             )
+            ui.button("테스트", on_click=lambda: ui.navigate.to("/test")).classes(
+                "bg-green-500 hover:bg-green-600 text-white"
+            )
             ui.button("Logout", on_click=handle_logout).classes(
                 "bg-red-500 hover:bg-red-600 text-white"
             )
@@ -109,6 +113,12 @@ def register_page():
 @ui.page("/stocks")
 def stocks_page():
     create_stocks_page()
+
+
+# 테스트 페이지 등록
+@ui.page("/test")
+def test_page():
+    create_test_page()
 
 
 # 3. NiceGUI를 FastAPI 앱과 함께 실행
