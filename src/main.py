@@ -6,6 +6,7 @@ from src.core.middleware import AuthenticationMiddleware
 from starlette.middleware.sessions import SessionMiddleware
 from src.pages.login import create_login_page
 from src.pages.register import create_register_page
+from src.pages.stocks import create_stocks_page
 
 logger_main = logging.getLogger("main_debug_minimal")
 
@@ -68,7 +69,7 @@ def minimal_home_page():
             # Load user info immediately
             load_user_info()
 
-        # Logout button
+        # Logout function
         async def handle_logout():
             # Initialize storage if not exists
             if not hasattr(ui, "storage"):
@@ -82,9 +83,14 @@ def minimal_home_page():
             ui.notify("Logged out successfully", type="positive")
             ui.navigate.to("/login")
 
-        ui.button("Logout", on_click=handle_logout).classes(
-            "bg-red-500 hover:bg-red-600 text-white"
-        )
+        # Navigation buttons
+        with ui.row().classes("w-full justify-center gap-4"):
+            ui.button("주식 관리", on_click=lambda: ui.navigate.to("/stocks")).classes(
+                "bg-blue-500 hover:bg-blue-600 text-white"
+            )
+            ui.button("Logout", on_click=handle_logout).classes(
+                "bg-red-500 hover:bg-red-600 text-white"
+            )
 
 
 # 로그인 페이지 등록
@@ -97,6 +103,12 @@ def login_page():
 @ui.page("/register")
 def register_page():
     create_register_page()
+
+
+# 주식 관리 페이지 등록
+@ui.page("/stocks")
+def stocks_page():
+    create_stocks_page()
 
 
 # 3. NiceGUI를 FastAPI 앱과 함께 실행
