@@ -1,0 +1,138 @@
+{
+    "tool": {
+        "cursor": {
+            "project": {
+                "name": "quant_trading",
+                "type": "python",
+                "framework": [
+                    "fastapi",
+                    "nicegui"
+                ],
+                "database": "sqlalchemy",
+                "migration": "alembic",
+                "versions": {
+                    "nicegui": ">=1.4.21",
+                    "fastapi": ">=0.109.2"
+                }
+            },
+            "file_patterns": {
+                "always_include": [
+                    "alembic.ini",
+                    "pyproject.toml",
+                    "poetry.lock",
+                    "requirements/dev.txt",
+                    ".venv/**/*"
+                ],
+                "exclude": [
+                    "**/__pycache__/**",
+                    "**/.git/**",
+                    "**/.DS_Store",
+                    "**/archive/**"
+                ]
+            },
+            "code_structure": {
+                "src": {
+                    "api": {
+                        "description": "FastAPI routers and endpoint definitions",
+                        "patterns": [
+                            "router.py",
+                            "endpoints/*.py"
+                        ]
+                    },
+                    "core": {
+                        "description": "Core settings and common functionality",
+                        "patterns": [
+                            "config.py",
+                            "security.py",
+                            "constants.py"
+                        ]
+                    },
+                    "db": {
+                        "description": "Database related code",
+                        "patterns": [
+                            "base.py",
+                            "session.py",
+                            "init_db.py"
+                        ]
+                    },
+                    "models": {
+                        "description": "SQLAlchemy model definitions",
+                        "patterns": [
+                            "*.py"
+                        ]
+                    },
+                    "schemas": {
+                        "description": "Pydantic models and schema definitions",
+                        "patterns": [
+                            "*.py"
+                        ]
+                    },
+                    "services": {
+                        "description": "Business logic and service layer",
+                        "patterns": [
+                            "*.py"
+                        ]
+                    },
+                    "utils": {
+                        "description": "Utility functions and helpers",
+                        "patterns": [
+                            "*.py"
+                        ]
+                    },
+                    "pages": {
+                        "description": "NiceGUI page components",
+                        "patterns": [
+                            "*.py"
+                        ]
+                    }
+                }
+            },
+            "code_style": {
+                "python": {
+                    "max_line_length": 100,
+                    "docstring_style": "google",
+                    "type_hints": true
+                }
+            },
+            "best_practices": {
+                "fastapi": {
+                    "dependency_injection": true,
+                    "async_support": true,
+                    "openapi_docs": true,
+                    "version_specific": {
+                        ">=0.109.2": {
+                            "use_pydantic_v2": true,
+                            "use_typing_extensions": true,
+                            "use_annotated_types": true,
+                            "use_async_dependencies": true,
+                            "use_modern_routing": true,
+                            "use_modern_middleware": true,
+                            "use_modern_exception_handlers": true
+                        }
+                    }
+                },
+                "nicegui": {
+                    "component_based": true,
+                    "state_management": true,
+                    "responsive_design": true,
+                    "version_specific": {
+                        ">=1.4.21": {
+                            "use_modern_components": true,
+                            "use_quasar_components": true,
+                            "use_modern_state_management": true,
+                            "use_modern_routing": true,
+                            "use_modern_events": true,
+                            "use_modern_styling": true,
+                            "use_modern_animations": true,
+                            "use_modern_validation": true
+                        }
+                    }
+                },
+                "sqlalchemy": {
+                    "async_engine": true,
+                    "type_annotations": true
+                }
+            }
+        }
+    }
+}

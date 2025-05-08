@@ -75,4 +75,4 @@ post-install = "scripts.export_requirements:post_install"
 testpaths = ["tests"]
 python_files = ["test_*.py"]
 addopts = "-v --cov=src --cov-report=term-missing"
-asyncio_mode = "auto" 
+asyncio_mode = "auto"
