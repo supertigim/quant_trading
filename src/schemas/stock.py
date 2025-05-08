@@ -1,0 +1,36 @@
+from pydantic import BaseModel, Field
+from typing import Optional
+
+
+class StockBase(BaseModel):
+    name: str = Field(..., description="Stock name")
+    ticker: str = Field(..., description="Stock ticker symbol")
+    country: str = Field(
+        ...,
+        min_length=2,
+        max_length=2,
+        description="2-digit country code (e.g., US, KR, JP)",
+    )
+
+
+class StockCreate(StockBase):
+    pass
+
+
+class StockUpdate(BaseModel):
+    name: Optional[str] = Field(None, description="Stock name")
+    ticker: Optional[str] = Field(None, description="Stock ticker symbol")
+    country: Optional[str] = Field(
+        None, min_length=2, max_length=2, description="2-digit country code"
+    )
+
+
+class StockInDB(StockBase):
+    id: str
+
+    class Config:
+        from_attributes = True
+
+
+class Stock(StockInDB):
+    pass
