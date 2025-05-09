@@ -14,7 +14,39 @@
                     "user": "postgres",
                     "password": "postgres"
                 },
-                "migration": "alembic",
+                "migration": {
+                    "tool": "alembic",
+                    "rules": {
+                        "safety": {
+                            "no_drop_table": true,
+                            "no_drop_column": true,
+                            "use_alter_table": true,
+                            "preserve_data": true,
+                            "require_downgrade": true,
+                            "require_testing": true
+                        },
+                        "best_practices": {
+                            "use_temporary_columns": true,
+                            "copy_data_before_change": true,
+                            "add_columns_nullable_first": true,
+                            "update_data_before_constraints": true,
+                            "test_upgrade_downgrade": true,
+                            "backup_before_migration": true,
+                            "document_steps": true,
+                            "review_before_apply": true
+                        },
+                        "validation": {
+                            "check_drop_statements": true,
+                            "verify_data_preservation": true,
+                            "confirm_downgrade_path": true,
+                            "test_in_development": true,
+                            "team_review": true,
+                            "document_rollback": true,
+                            "monitor_progress": true,
+                            "verify_data_integrity": true
+                        }
+                    }
+                },
                 "package_manager": "poetry",
                 "versions": {
                     "nicegui": ">=2.7.0",
@@ -99,7 +131,6 @@
                         "description": "Database related code",
                         "patterns": [
                             "base.py",
-                            "base_class.py",
                             "session.py",
                             "init_db.py"
                         ]
