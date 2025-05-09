@@ -220,27 +220,56 @@ def create_stocks_page():
 
         # 검색 필터 추가
         with ui.row().classes("w-full max-w-2xl gap-4 mb-4"):
-            with ui.input(
-                label="종목명 검색", placeholder="검색어를 입력하세요"
-            ).classes("w-1/2") as keyword_input:
+            with ui.column().classes("w-1/2 gap-2"):
+                with ui.input(
+                    label="종목명 검색", placeholder="검색어를 입력하세요"
+                ).classes("w-full") as keyword_input:
 
-                def on_keyword_change(e):
-                    nonlocal search_keyword
-                    search_keyword = e.value.lower()
-                    asyncio.create_task(refresh_stocks())
+                    def on_keyword_change(e):
+                        nonlocal search_keyword
+                        search_keyword = e.args.lower()
+                        logger.info(f"Search keyword changed to: {search_keyword}")
+                        # 즉시 UI 업데이트를 위해 notify 추가
+                        ui.notify(f"검색어 변경: {search_keyword}", type="info")
+                        # 비동기 작업 생성 및 실행
+                        asyncio.create_task(refresh_stocks())
 
-                keyword_input.on("update", on_keyword_change)
+                    # 이벤트 핸들러 등록 방식 변경
+                    keyword_input.on("input", on_keyword_change)
+                    keyword_input.on("change", on_keyword_change)
 
-            with ui.input(label="티커 검색", placeholder="티커를 입력하세요").classes(
-                "w-1/2"
-            ) as ticker_input:
+            with ui.column().classes("w-1/2 gap-2"):
+                with ui.input(
+                    label="티커 검색", placeholder="티커를 입력하세요"
+                ).classes("w-full") as ticker_input:
 
-                def on_ticker_change(e):
-                    nonlocal search_ticker
-                    search_ticker = e.value.lower()
-                    asyncio.create_task(refresh_stocks())
+                    def on_ticker_change(e):
+                        nonlocal search_ticker
+                        search_ticker = e.args.lower()
+                        logger.info(f"Search ticker changed to: {search_ticker}")
+                        # 즉시 UI 업데이트를 위해 notify 추가
+                        ui.notify(f"티커 변경: {search_ticker}", type="info")
+                        # 비동기 작업 생성 및 실행
+                        asyncio.create_task(refresh_stocks())
 
-                ticker_input.on("update", on_ticker_change)
+                    # 이벤트 핸들러 등록 방식 변경
+                    ticker_input.on("input", on_ticker_change)
+                    ticker_input.on("change", on_ticker_change)
+
+            # 초기화 버튼 추가
+            def reset_filters():
+                nonlocal search_keyword, search_ticker
+                search_keyword = ""
+                search_ticker = ""
+                keyword_input.value = ""
+                ticker_input.value = ""
+                logger.info("Filters reset")
+                ui.notify("검색 필터가 초기화되었습니다.", type="info")
+                asyncio.create_task(refresh_stocks())
+
+            ui.button("필터 초기화", on_click=reset_filters).classes(
+                "bg-gray-500 hover:bg-gray-600 text-white"
+            )
 
         # 테이블 컨테이너
         table_container = ui.column().classes("w-full max-w-2xl gap-2")
@@ -285,20 +314,37 @@ def create_stocks_page():
         async def refresh_stocks():
             try:
                 logger.info("Refreshing stocks list")
+                logger.info(f"Current search keyword: {search_keyword}")
                 print("--- refresh_stocks CALLED ---", flush=True)
 
                 async with AsyncSessionLocal() as db:
                     stock_repo = StockRepository(db)
                     # 모든 주식 가져오기
                     stocks = await stock_repo.get_all()
+                    logger.info(f"Total stocks before filtering: {len(stocks)}")
 
-                    # 검색어로 필터링
+                    # 검색어로 필터링 (대소문자 구분 없이)
                     if search_keyword:
-                        stocks = [s for s in stocks if search_keyword in s.name.lower()]
+                        filtered_stocks = []
+                        for stock in stocks:
+                            if search_keyword in stock.name.lower():
+                                filtered_stocks.append(stock)
+                        stocks = filtered_stocks
+                        logger.info(f"Stocks after keyword filtering: {len(stocks)}")
+                        # 필터링 결과가 없을 경우 알림
+                        if len(stocks) == 0:
+                            ui.notify("검색 결과가 없습니다.", type="warning")
+
                     if search_ticker:
-                        stocks = [
-                            s for s in stocks if search_ticker in s.ticker.lower()
-                        ]
+                        filtered_stocks = []
+                        for stock in stocks:
+                            if search_ticker in stock.ticker.lower():
+                                filtered_stocks.append(stock)
+                        stocks = filtered_stocks
+                        logger.info(f"Stocks after ticker filtering: {len(stocks)}")
+                        # 필터링 결과가 없을 경우 알림
+                        if len(stocks) == 0:
+                            ui.notify("검색 결과가 없습니다.", type="warning")
 
                     # 정렬 적용
                     stocks = sorted(
@@ -324,6 +370,7 @@ def create_stocks_page():
                             for stock in stocks
                         ]
                         table.update()  # 테이블 UI 업데이트
+                        logger.info(f"Table updated with {len(stocks)} rows")
             except Exception as e:
                 logger.error(f"Error refreshing stocks: {str(e)}")
                 with table:
