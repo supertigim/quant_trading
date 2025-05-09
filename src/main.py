@@ -8,6 +8,7 @@ from src.pages.login import create_login_page
 from src.pages.register import create_register_page
 from src.pages.stocks import create_stocks_page
 from src.pages.test import create_test_page
+from src.pages.stock import stock_detail_page
 from fastapi.middleware.cors import CORSMiddleware
 from src.api.endpoints import auth
 
@@ -129,6 +130,9 @@ def register_page():
 @ui.page("/stocks")
 def stocks_page():
     create_stocks_page()
+
+
+# 주식 상세 페이지는 이미 @ui.page 데코레이터로 등록되어 있으므로 여기서는 import만 하면 됩니다
 
 
 # 테스트 페이지 등록

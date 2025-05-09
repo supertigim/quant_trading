@@ -14,6 +14,7 @@ from typing import Optional, List
 from datetime import datetime
 import asyncio
 from nicegui.events import ValueChangeEventArguments
+from nicegui import app
 
 # 로깅 설정
 logging.basicConfig(level=logging.INFO)
@@ -398,24 +399,10 @@ def create_stocks_page():
                     logger.info("rowClick: no row data")
                     return
                 logger.info(f"rowClick: {row}")
-                ui.notify(f"Clicked: {row['name']} ({row['ticker']})")
-                with ui.dialog() as dialog, ui.card().classes("w-[600px] p-4"):
-                    ui.label(f"종목 상세 정보").classes("text-xl font-bold mb-4")
-                    with ui.column().classes("gap-2"):
-                        ui.label(f"종목명: {row['name']}").classes("text-lg")
-                        ui.label(f"티커: {row['ticker']}").classes("text-lg")
-                        ui.label(f"마켓: {row['market']}").classes("text-lg")
-                        ui.label(f"국가: {row['country']}").classes("text-lg")
-                        ui.separator().classes("my-4")
-                        ui.label("추가 정보").classes("text-lg font-bold mb-2")
-                        ui.label("추가 정보는 추후 구현 예정입니다.").classes(
-                            "text-gray-500"
-                        )
-                    with ui.row().classes("w-full justify-end mt-4"):
-                        ui.button("닫기", on_click=dialog.close).classes(
-                            "bg-blue-500 text-white"
-                        )
-                dialog.open()
+
+                # 상세 페이지로 이동
+                ui.navigate.to(f'/stock/{row["ticker"]}')
+
             except Exception as e:
                 logger.error(f"Error showing stock details: {str(e)}")
                 ui.notify(
