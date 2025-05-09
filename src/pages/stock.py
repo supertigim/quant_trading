@@ -23,7 +23,7 @@ def stock_detail_page(ticker: str):
         )
 
         # 상세 정보를 표시할 컨테이너
-        with ui.card().classes("w-full max-w-2xl"):
+        with ui.card().classes("w-full max-w-2xl") as container:
             # 기본 정보 섹션
             with ui.card().classes("w-full"):
                 ui.label("기본 정보").classes("text-xl font-bold mb-4")
@@ -57,32 +57,39 @@ def stock_detail_page(ticker: str):
                         stock = await stock_repo.get_by_ticker(ticker)
 
                         if stock:
-                            # 기본 정보 업데이트
-                            name_label.set_text(stock.name)
-                            ticker_label.set_text(stock.ticker)
-                            market_label.set_text(stock.market)
-                            country_label.set_text(stock.country)
-                            last_updated_label.set_text(
-                                stock.last_updated.strftime("%Y-%m-%d %H:%M:%S")
-                                if stock.last_updated
-                                else "-"
-                            )
+                            # UI 업데이트를 컨테이너 컨텍스트 내에서 수행
+                            with container:
+                                # 기본 정보 업데이트
+                                name_label.set_text(stock.name)
+                                ticker_label.set_text(stock.ticker)
+                                market_label.set_text(stock.market)
+                                country_label.set_text(stock.country)
+                                last_updated_label.set_text(
+                                    stock.last_updated.strftime("%Y-%m-%d %H:%M:%S")
+                                    if stock.last_updated
+                                    else "-"
+                                )
 
-                            # 로딩 성공 알림
-                            ui.notify(
-                                "종목 정보를 성공적으로 불러왔습니다.", type="positive"
-                            )
+                                # 로딩 성공 알림
+                                ui.notify(
+                                    "종목 정보를 성공적으로 불러왔습니다.",
+                                    type="positive",
+                                )
                         else:
-                            ui.notify(
-                                f"종목을 찾을 수 없습니다: {ticker}", type="negative"
-                            )
-                            ui.navigate.to("/")
+                            with container:
+                                ui.notify(
+                                    f"종목을 찾을 수 없습니다: {ticker}",
+                                    type="negative",
+                                )
+                                ui.navigate.to("/")
 
                 except Exception as e:
                     logger.error(f"Error loading stock details: {str(e)}")
-                    ui.notify(
-                        "종목 정보를 불러오는 중 오류가 발생했습니다.", type="negative"
-                    )
+                    with container:
+                        ui.notify(
+                            "종목 정보를 불러오는 중 오류가 발생했습니다.",
+                            type="negative",
+                        )
 
             # 비동기로 데이터 로드
             asyncio.create_task(load_stock_details())
