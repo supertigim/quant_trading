@@ -1,67 +1,111 @@
 from nicegui import ui
-from src.api.deps import authenticate_user
-from src.core.security import create_access_token
-from src.db.session import SessionLocal
-from datetime import timedelta
+from src.db.session import AsyncSessionLocal
 from src.core.config import settings
+from src.core.security import create_access_token, verify_password
+from src.api.deps import authenticate_user
+from src.models.user import User
+from sqlalchemy import select
+import uuid
+import logging
 
 # import nicegui # nicegui 전체 모듈 임포트 제거 또는 주석 처리
 import httpx
 
+# 로깅 설정
+logging.basicConfig(level=logging.INFO)
+logger = logging.getLogger(__name__)
+
 
 def create_login_page():
-    with ui.card().classes("w-full max-w-md mx-auto mt-8"):
-        ui.label("Login").classes("text-2xl font-bold mb-4")
+    with ui.card().classes(
+        "w-full max-w-md mx-auto mt-8 bg-gray-800 shadow-lg rounded-lg"
+    ):
+        ui.label("로그인").classes("text-2xl font-bold mb-6 text-center text-white")
 
-        email = ui.input("Email").classes("w-full mb-4")
-        password = ui.input("Password", password=True).classes("w-full mb-4")
-        error_label = ui.label("").classes("text-red-500 mb-4")
-
-        async def handle_login():
-            try:
-                db = SessionLocal()
-                user = authenticate_user(db, email.value, password.value)
-
-                if not user:
-                    error_label.set_text("Invalid email or password")
-                    return
-
-                if not user.is_active:
-                    error_label.set_text("Inactive user")
-                    return
-
-                # Initialize storage if not exists
-                if not hasattr(ui, "storage"):
-                    ui.storage = {}
-                if "user" not in ui.storage:
-                    ui.storage["user"] = {}
-
-                # Create access token
-                access_token_expires = timedelta(
-                    minutes=settings.ACCESS_TOKEN_EXPIRE_MINUTES
+        with ui.column().classes("w-full px-6 pb-6"):
+            email = (
+                ui.input(placeholder="이메일")
+                .classes(
+                    "w-full mb-4 bg-gray-700 text-white border border-gray-600 rounded-lg"
                 )
-                access_token = create_access_token(
-                    user.id, expires_delta=access_token_expires
+                .props("input-class=text-white placeholder-color=gray-400")
+            )
+
+            password = (
+                ui.input(placeholder="비밀번호", password=True)
+                .classes(
+                    "w-full mb-4 bg-gray-700 text-white border border-gray-600 rounded-lg"
                 )
+                .props("input-class=text-white placeholder-color=gray-400")
+            )
 
-                # Store user info and token in storage
-                ui.storage["user"]["token"] = access_token
-                ui.storage["user"]["user"] = {
-                    "id": user.id,
-                    "email": user.email,
-                    "username": user.username,
-                }
+            error_label = ui.label("").classes("text-red-400 mb-4 text-sm")
 
-                ui.notify("Login successful!", type="positive")
-                ui.navigate.to("/")  # Redirect to home page
-            except Exception as e:
-                error_label.set_text(f"Login failed: {str(e)}")
-            finally:
-                db.close()
+            async def handle_login():
+                try:
+                    logger.info(f"로그인 시도: {email.value}")
 
-        ui.button("Login", on_click=handle_login).classes(
-            "w-full bg-blue-500 text-white"
-        )
-        ui.link("Don't have an account? Register", "/register").classes(
-            "mt-4 text-blue-500"
-        )
+                    if not email.value or not password.value:
+                        error_label.set_text("이메일과 비밀번호를 입력해주세요.")
+                        logger.warning("로그인 실패: 필수 입력값 누락")
+                        return
+
+                    async with AsyncSessionLocal() as db:
+                        result = await db.execute(
+                            select(User).where(User.email == email.value)
+                        )
+                        user = result.scalar_one_or_none()
+
+                        if not user:
+                            error_label.set_text(
+                                "이메일 또는 비밀번호가 올바르지 않습니다."
+                            )
+                            logger.warning(
+                                f"로그인 실패: 사용자를 찾을 수 없음 (이메일: {email.value})"
+                            )
+                            return
+
+                        if not verify_password(password.value, user.hashed_password):
+                            error_label.set_text(
+                                "이메일 또는 비밀번호가 올바르지 않습니다."
+                            )
+                            logger.warning(
+                                f"로그인 실패: 비밀번호 불일치 (이메일: {email.value})"
+                            )
+                            return
+
+                        access_token = create_access_token(data={"sub": str(user.id)})
+                        logger.info(f"로그인 성공: {user.username} ({user.email})")
+
+                        if not hasattr(ui, "storage"):
+                            ui.storage = {}
+                        if "user" not in ui.storage:
+                            ui.storage["user"] = {}
+
+                        ui.storage["user"] = {
+                            "token": access_token,
+                            "user": {
+                                "id": str(user.id),
+                                "username": user.username,
+                                "email": user.email,
+                                "is_active": user.is_active,
+                                "is_superuser": user.is_superuser,
+                            },
+                        }
+
+                        ui.notify("로그인 성공!", type="positive")
+                        ui.navigate.to("/")
+
+                except Exception as e:
+                    error_msg = f"로그인 중 오류가 발생했습니다: {str(e)}"
+                    error_label.set_text(error_msg)
+                    logger.error(f"로그인 오류: {str(e)}", exc_info=True)
+
+            ui.button("로그인", on_click=handle_login).classes(
+                "w-full bg-blue-600 hover:bg-blue-700 text-white font-medium py-2 rounded-lg transition-colors"
+            )
+
+            with ui.row().classes("w-full justify-center mt-4"):
+                ui.link("계정이 없으신가요? 회원가입", "/register").classes(
+                    "text-blue-400 hover:text-blue-300 text-sm transition-colors"
+                )

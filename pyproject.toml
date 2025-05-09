@@ -19,7 +19,7 @@ psycopg2-binary = ">=2.9.9"
 pydantic = {extras = ["email"], version = ">=2.11.4"}
 pydantic-settings = ">=2.1.0"
 alembic = ">=1.13.1"
-python-jose = {extras = ["cryptography"], version = "^3.3.0"}
+python-jose = {extras = ["cryptography"], version = "^3.4.0"}
 passlib = {extras = ["bcrypt"], version = "^1.7.4"}
 python-multipart = "^0.0.9"  # for form data parsing
 email-validator = "^2.1.0.post1"  # for email validation
@@ -28,6 +28,8 @@ bcrypt = "4.0.1"
 yfinance = "^0.2.59"
 pandas = "^2.2.3"
 finance-datareader = "^0.9.96"
+asyncpg = "^0.30.0"
+typer = {extras = ["all"], version = "^0.9.0"}
 
 [tool.poetry.group.dev.dependencies]
 black = ">=24.1.1"

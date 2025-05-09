@@ -135,3 +135,6 @@ htmlcov/
 # Exclude specific log files but keep Python files
 *.log
 !src/**/*.py
+
+.cursorrules
+.cursor/

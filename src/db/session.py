@@ -1,16 +1,29 @@
 from sqlalchemy import create_engine
-from sqlalchemy.orm import sessionmaker, declarative_base
+from sqlalchemy.orm import sessionmaker
+from sqlalchemy.ext.asyncio import create_async_engine, AsyncSession
 from src.core.config import settings
 
-engine = create_engine(str(settings.SQLALCHEMY_DATABASE_URI))
-SessionLocal = sessionmaker(autocommit=False, autoflush=False, bind=engine)
+# Async engine 생성
+engine = create_async_engine(
+    settings.SQLALCHEMY_DATABASE_URI,
+    echo=settings.DB_ECHO,
+    future=True,
+)
 
-Base = declarative_base()
+# Async session factory 생성
+AsyncSessionLocal = sessionmaker(
+    engine,
+    class_=AsyncSession,
+    expire_on_commit=False,
+    autocommit=False,
+    autoflush=False,
+)
 
 
-def get_db():
-    db = SessionLocal()
-    try:
-        yield db
-    finally:
-        db.close()
+async def get_db():
+    """데이터베이스 세션을 제공하는 의존성 함수"""
+    async with AsyncSessionLocal() as session:
+        try:
+            yield session
+        finally:
+            await session.close()

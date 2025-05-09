@@ -8,11 +8,56 @@
                     "fastapi",
                     "nicegui"
                 ],
-                "database": "sqlalchemy",
+                "database": {
+                    "type": "sqlalchemy",
+                    "name": "quant_trading",
+                    "user": "postgres",
+                    "password": "postgres"
+                },
                 "migration": "alembic",
+                "package_manager": "poetry",
                 "versions": {
-                    "nicegui": ">=1.4.21",
+                    "nicegui": ">=2.7.0",
                     "fastapi": ">=0.109.2"
+                },
+                "python": {
+                    "version": "3.11",
+                    "notice": "Do not use pip install"
+                },
+                "container": {
+                    "enabled": true,
+                    "name": "quant_trading_app",
+                    "command_prefix": "docker compose exec app",
+                    "commands": {
+                        "run": "docker compose up -d",
+                        "stop": "docker compose down",
+                        "logs": "docker compose logs -f",
+                        "shell": "docker compose exec app bash",
+                        "migrate": "docker compose exec app alembic upgrade head",
+                        "makemigrations": "docker compose exec app alembic revision --autogenerate -m"
+                    }
+                },
+                "environment": {
+                    "use_env_file": true,
+                    "env_file": ".env",
+                    "required_variables": [
+                        "PROJECT_NAME",
+                        "VERSION",
+                        "API_V1_STR",
+                        "SECRET_KEY",
+                        "ALGORITHM",
+                        "ACCESS_TOKEN_EXPIRE_MINUTES",
+                        "ADMIN_USERNAME",
+                        "ADMIN_PASSWORD",
+                        "POSTGRES_HOST",
+                        "POSTGRES_USER",
+                        "POSTGRES_PASSWORD",
+                        "POSTGRES_DB",
+                        "DB_ECHO",
+                        "APP_HOST",
+                        "APP_PORT",
+                        "BACKEND_CORS_ORIGINS"
+                    ]
                 }
             },
             "file_patterns": {
@@ -21,7 +66,10 @@
                     "pyproject.toml",
                     "poetry.lock",
                     "requirements/dev.txt",
-                    ".venv/**/*"
+                    ".venv/**/*",
+                    ".env",
+                    "docker-compose.yml",
+                    "Dockerfile"
                 ],
                 "exclude": [
                     "**/__pycache__/**",
@@ -51,6 +99,7 @@
                         "description": "Database related code",
                         "patterns": [
                             "base.py",
+                            "base_class.py",
                             "session.py",
                             "init_db.py"
                         ]

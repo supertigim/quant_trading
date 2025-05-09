@@ -38,17 +38,38 @@ Alembic을 사용하여 데이터베이스 마이그레이션을 관리합니다
 
 ```bash
 # 마이그레이션 파일 생성
-alembic revision --autogenerate -m "migration message"
+docker compose exec app alembic revision --autogenerate -m "migration message"
 
 # 마이그레이션 적용
-alembic upgrade head
+docker compose exec app alembic upgrade head
 
 # 마이그레이션 롤백
-alembic downgrade -1  # 한 단계 롤백
-alembic downgrade base  # 처음으로 롤백
+docker compose exec app alembic downgrade -1  # 한 단계 롤백
+docker compose exec app alembic downgrade base  # 처음으로 롤백
 ```
 
-### 2. 모델 정의
+### 2. Superuser 생성
+
+관리자 계정을 생성하려면 다음 명령어를 사용합니다:
+
+```bash
+docker compose exec app python src/cli.py users create-superuser
+```
+
+이 명령어를 실행하면 이메일, 사용자 이름, 비밀번호를 순차적으로 입력하라는 프롬프트가 표시됩니다.
+비밀번호는 입력 시 화면에 표시되지 않으며, 확인을 위해 두 번 입력해야 합니다.
+
+예시:
+```bash
+$ docker compose exec app python src/cli.py users create-superuser
+Email: admin@example.com
+Username: admin
+Password: ********
+Repeat for confirmation: ********
+Superuser admin created successfully!
+```
+
+### 3. 모델 정의
 
 `src/models` 디렉토리에 SQLAlchemy 모델을 정의합니다:
 
@@ -64,7 +85,7 @@ class Stock(BaseModel):
     price = Column(Float, nullable=False)
 ```
 
-### 3. 스키마 정의
+### 4. 스키마 정의
 
 `src/schemas` 디렉토리에 Pydantic 스키마를 정의합니다:
 
@@ -89,7 +110,7 @@ class Stock(StockBase):
         from_attributes = True
 ```
 
-### 4. 리포지토리 패턴
+### 5. 리포지토리 패턴
 
 `src/db/repositories` 디렉토리에 데이터베이스 작업을 처리하는 리포지토리를 정의합니다:
 
@@ -113,7 +134,7 @@ class StockRepository:
         return self.db.query(Stock).filter(Stock.symbol == symbol).first()
 ```
 
-### 5. 서비스 레이어
+### 6. 서비스 레이어
 
 `src/services` 디렉토리에 비즈니스 로직을 처리하는 서비스를 정의합니다:
 
@@ -132,7 +153,7 @@ class StockService:
         return self.stock_repository.get_by_symbol(symbol)
 ```
 
-### 6. API 엔드포인트
+### 7. API 엔드포인트
 
 `src/api/v1/endpoints` 디렉토리에 API 엔드포인트를 정의합니다:
 

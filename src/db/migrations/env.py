@@ -7,6 +7,7 @@ from src.models.base import Base
 
 # Import all models here to ensure they are registered with Base.metadata
 from src.models.user import User  # noqa
+from src.models.stock import Stock  # noqa
 
 # this is the Alembic Config object, which provides
 # access to the values within the .ini file in use.
@@ -23,7 +24,9 @@ target_metadata = Base.metadata
 
 
 def get_url():
-    return str(settings.SQLALCHEMY_DATABASE_URI)
+    # Convert async URL to sync URL for migrations
+    url = str(settings.SQLALCHEMY_DATABASE_URI)
+    return url.replace("postgresql+asyncpg://", "postgresql://")
 
 
 def run_migrations_offline() -> None:

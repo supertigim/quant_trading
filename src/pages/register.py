@@ -1,96 +1,119 @@
 from nicegui import ui
-from src.schemas.user import UserCreate
-from src.db.repositories.user import UserRepository
-from src.db.session import SessionLocal
-from src.core.security import create_access_token
-from datetime import timedelta
+from src.db.session import AsyncSessionLocal
+from src.core.security import get_password_hash
 from src.core.config import settings
+from src.db.repositories.user import UserRepository
+from src.schemas.user import UserCreate
 import uuid
+import logging
+
+# 로깅 설정
+logging.basicConfig(level=logging.INFO)
+logger = logging.getLogger(__name__)
 
 
 def create_register_page():
-    with ui.card().classes("w-full max-w-md mx-auto mt-8"):
-        ui.label("Registration").classes("text-2xl font-bold mb-4")
+    with ui.card().classes(
+        "w-full max-w-md mx-auto mt-8 bg-gray-800 shadow-lg rounded-lg"
+    ):
+        ui.label("회원가입").classes("text-2xl font-bold mb-6 text-center text-white")
 
-        email = ui.input("Email").classes("w-full mb-4")
-        username = ui.input("Username").classes("w-full mb-4")
-        password = ui.input("Password", password=True).classes("w-full mb-4")
-        confirm_password = ui.input("Confirm Password", password=True).classes(
-            "w-full mb-4"
-        )
-
-        error_label = ui.label("").classes("text-red-500 mb-4")
-
-        async def handle_register():
-            if not email.value or not username.value or not password.value:
-                error_label.set_text("All fields are required")
-                return
-
-            if password.value != confirm_password.value:
-                error_label.set_text("Passwords do not match")
-                return
-
-            if len(password.value) < 8:
-                error_label.set_text("Password must be at least 8 characters long")
-                return
-
-            try:
-                db = SessionLocal()
-                user_repo = UserRepository(db)
-
-                # Check if email already exists
-                if user_repo.get_by_email(email.value):
-                    error_label.set_text("Email already registered")
-                    return
-
-                # Check if username already exists
-                if user_repo.get_by_username(username.value):
-                    error_label.set_text("Username already taken")
-                    return
-
-                # Create new user
-                user_data = UserCreate(
-                    id=str(uuid.uuid4()),
-                    email=email.value,
-                    username=username.value,
-                    password=password.value,
+        with ui.column().classes("w-full px-6 pb-6"):
+            username = (
+                ui.input(placeholder="사용자 이름")
+                .classes(
+                    "w-full mb-4 bg-gray-700 text-white border border-gray-600 rounded-lg"
                 )
+                .props("input-class=text-white placeholder-color=gray-400")
+            )
 
-                user = user_repo.create(user_data)
-
-                # Initialize storage if not exists
-                if not hasattr(ui, "storage"):
-                    ui.storage = {}
-                if "user" not in ui.storage:
-                    ui.storage["user"] = {}
-
-                # Create access token and store user info
-                access_token_expires = timedelta(
-                    minutes=settings.ACCESS_TOKEN_EXPIRE_MINUTES
+            email = (
+                ui.input(placeholder="이메일")
+                .classes(
+                    "w-full mb-4 bg-gray-700 text-white border border-gray-600 rounded-lg"
                 )
-                access_token = create_access_token(
-                    user.id, expires_delta=access_token_expires
+                .props("input-class=text-white placeholder-color=gray-400")
+            )
+
+            password = (
+                ui.input(placeholder="비밀번호", password=True)
+                .classes(
+                    "w-full mb-4 bg-gray-700 text-white border border-gray-600 rounded-lg"
                 )
+                .props("input-class=text-white placeholder-color=gray-400")
+            )
 
-                # Store user info and token in storage
-                ui.storage["user"]["token"] = access_token
-                ui.storage["user"]["user"] = {
-                    "id": user.id,
-                    "email": user.email,
-                    "username": user.username,
-                }
+            confirm_password = (
+                ui.input(placeholder="비밀번호 확인", password=True)
+                .classes(
+                    "w-full mb-4 bg-gray-700 text-white border border-gray-600 rounded-lg"
+                )
+                .props("input-class=text-white placeholder-color=gray-400")
+            )
 
-                ui.notify("Registration successful! Welcome!", type="positive")
-                ui.navigate.to("/")  # Redirect to main page
+            error_label = ui.label("").classes("text-red-400 mb-4 text-sm")
 
-            except Exception as e:
-                error_label.set_text(f"Registration failed: {str(e)}")
-            finally:
-                db.close()
+            async def handle_register():
+                try:
+                    logger.info(f"회원가입 시도: {email.value} ({username.value})")
 
-        ui.button("Register", on_click=handle_register).classes(
-            "w-full bg-blue-500 text-white"
-        )
-        ui.link("Already have an account? Login", "/login").classes(
-            "mt-4 text-blue-500"
-        )
+                    if not all(
+                        [
+                            username.value,
+                            email.value,
+                            password.value,
+                            confirm_password.value,
+                        ]
+                    ):
+                        error_label.set_text("모든 필드를 입력해주세요.")
+                        logger.warning("회원가입 실패: 필수 입력값 누락")
+                        return
+
+                    if password.value != confirm_password.value:
+                        error_label.set_text("비밀번호가 일치하지 않습니다.")
+                        logger.warning("회원가입 실패: 비밀번호 불일치")
+                        return
+
+                    async with AsyncSessionLocal() as db:
+                        user_repo = UserRepository(db)
+
+                        if await user_repo.get_by_email(email.value):
+                            error_label.set_text("이미 등록된 이메일입니다.")
+                            logger.warning(
+                                f"회원가입 실패: 이메일 중복 ({email.value})"
+                            )
+                            return
+
+                        if await user_repo.get_by_username(username.value):
+                            error_label.set_text("이미 사용 중인 사용자 이름입니다.")
+                            logger.warning(
+                                f"회원가입 실패: 사용자 이름 중복 ({username.value})"
+                            )
+                            return
+
+                        user_data = UserCreate(
+                            id=str(uuid.uuid4()),
+                            email=email.value,
+                            username=username.value,
+                            password=password.value,
+                        )
+
+                        user = await user_repo.create(user_data)
+                        logger.info(f"회원가입 성공: {user.username} ({user.email})")
+
+                        ui.notify("회원가입이 완료되었습니다!", type="positive")
+                        ui.navigate.to("/login")
+
+                except Exception as e:
+                    error_msg = f"회원가입 중 오류가 발생했습니다: {str(e)}"
+                    error_label.set_text(error_msg)
+                    logger.error(f"회원가입 오류: {str(e)}", exc_info=True)
+
+            ui.button("회원가입", on_click=handle_register).classes(
+                "w-full bg-blue-600 hover:bg-blue-700 text-white font-medium py-2 rounded-lg transition-colors"
+            )
+
+            with ui.row().classes("w-full justify-center mt-4"):
+                ui.link("이미 계정이 있으신가요? 로그인", "/login").classes(
+                    "text-blue-400 hover:text-blue-300 text-sm transition-colors"
+                )

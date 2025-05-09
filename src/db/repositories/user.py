@@ -1,6 +1,6 @@
-from typing import Optional
-from sqlalchemy.orm import Session
-from sqlalchemy import func
+from typing import Optional, List
+from sqlalchemy.ext.asyncio import AsyncSession
+from sqlalchemy import select
 from src.models.user import User
 from src.schemas.user import UserCreate, UserUpdate
 from src.core.security import get_password_hash
@@ -8,39 +8,46 @@ import uuid
 
 
 class UserRepository:
-    def __init__(self, db: Session):
+    def __init__(self, db: AsyncSession):
         self.db = db
 
-    def get_by_id(self, user_id: str) -> Optional[User]:
-        return self.db.query(User).filter(User.id == user_id).first()
+    async def get_all(self) -> List[User]:
+        """모든 사용자를 가져옵니다."""
+        result = await self.db.execute(select(User))
+        return result.scalars().all()
 
-    def get_by_email(self, email: str) -> Optional[User]:
-        return (
-            self.db.query(User)
-            .filter(func.lower(User.email) == func.lower(email))
-            .first()
-        )
+    async def get_by_id(self, user_id: str) -> Optional[User]:
+        """ID로 사용자를 조회합니다."""
+        result = await self.db.execute(select(User).where(User.id == user_id))
+        return result.scalar_one_or_none()
 
-    def get_by_username(self, username: str) -> Optional[User]:
-        return (
-            self.db.query(User)
-            .filter(func.lower(User.username) == func.lower(username))
-            .first()
-        )
+    async def get_by_email(self, email: str) -> Optional[User]:
+        """이메일로 사용자를 조회합니다."""
+        result = await self.db.execute(select(User).where(User.email == email))
+        return result.scalar_one_or_none()
 
-    def create(self, user_in: UserCreate) -> User:
+    async def get_by_username(self, username: str) -> Optional[User]:
+        """사용자 이름으로 사용자를 조회합니다."""
+        result = await self.db.execute(select(User).where(User.username == username))
+        return result.scalar_one_or_none()
+
+    async def create(self, user_in: UserCreate) -> User:
+        """새로운 사용자를 생성합니다."""
         db_user = User(
             id=str(uuid.uuid4()),
             email=user_in.email,
             username=user_in.username,
             hashed_password=get_password_hash(user_in.password),
+            is_active=True,
+            is_superuser=False,
         )
         self.db.add(db_user)
-        self.db.commit()
-        self.db.refresh(db_user)
+        await self.db.commit()
+        await self.db.refresh(db_user)
         return db_user
 
-    def update(self, user: User, user_in: UserUpdate) -> User:
+    async def update(self, user: User, user_in: UserUpdate) -> User:
+        """사용자 정보를 업데이트합니다."""
         update_data = user_in.model_dump(exclude_unset=True)
         if "password" in update_data:
             update_data["hashed_password"] = get_password_hash(
@@ -48,11 +55,11 @@ class UserRepository:
             )
         for field, value in update_data.items():
             setattr(user, field, value)
-        self.db.add(user)
-        self.db.commit()
-        self.db.refresh(user)
+        await self.db.commit()
+        await self.db.refresh(user)
         return user
 
-    def delete(self, user: User) -> None:
-        self.db.delete(user)
-        self.db.commit()
+    async def delete(self, user: User) -> None:
+        """사용자를 삭제합니다."""
+        await self.db.delete(user)
+        await self.db.commit()

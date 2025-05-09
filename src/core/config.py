@@ -17,13 +17,17 @@ class Settings(BaseSettings):
     ALGORITHM: str
     ACCESS_TOKEN_EXPIRE_MINUTES: int
 
+    # Admin credentials
+    ADMIN_USERNAME: str
+    ADMIN_PASSWORD: str
+
     # Database
     POSTGRES_HOST: str
-    POSTGRES_PORT: str
     POSTGRES_USER: str
     POSTGRES_PASSWORD: str
     POSTGRES_DB: str
     SQLALCHEMY_DATABASE_URI: Optional[str] = None
+    DB_ECHO: bool = False
 
     # Application
     APP_HOST: str
@@ -38,6 +42,12 @@ class Settings(BaseSettings):
             return json.loads(v)
         return v
 
+    @property
+    def get_database_url(self) -> str:
+        if self.SQLALCHEMY_DATABASE_URI:
+            return self.SQLALCHEMY_DATABASE_URI
+        return f"postgresql+asyncpg://{self.POSTGRES_USER}:{self.POSTGRES_PASSWORD}@{self.POSTGRES_HOST}/{self.POSTGRES_DB}"
+
     class Config:
         case_sensitive = True
         env_file = ".env"
@@ -46,10 +56,7 @@ class Settings(BaseSettings):
     def __init__(self, **kwargs):
         super().__init__(**kwargs)
         if not self.SQLALCHEMY_DATABASE_URI:
-            self.SQLALCHEMY_DATABASE_URI = (
-                f"postgresql://{self.POSTGRES_USER}:{self.POSTGRES_PASSWORD}"
-                f"@{self.POSTGRES_HOST}:{self.POSTGRES_PORT}/{self.POSTGRES_DB}"
-            )
+            self.SQLALCHEMY_DATABASE_URI = self.get_database_url
 
 
 settings = Settings()

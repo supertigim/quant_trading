@@ -1,47 +1,47 @@
-from typing import Optional, List
-from sqlalchemy.orm import Session
+from sqlalchemy import select
+from sqlalchemy.ext.asyncio import AsyncSession
 from src.models.stock import Stock
-from src.schemas.stock import StockCreate, StockUpdate
-import uuid
+from typing import List, Optional
+from uuid import UUID
 
 
 class StockRepository:
-    def __init__(self, db: Session):
+    def __init__(self, db: AsyncSession):
         self.db = db
 
-    def get_by_id(self, stock_id: str) -> Optional[Stock]:
-        return self.db.query(Stock).filter(Stock.id == stock_id).first()
+    async def get_all(self) -> List[Stock]:
+        """모든 주식 목록을 가져옵니다."""
+        result = await self.db.execute(select(Stock))
+        return result.scalars().all()
 
-    def get_by_ticker(self, ticker: str) -> Optional[Stock]:
-        return self.db.query(Stock).filter(Stock.ticker == ticker).first()
+    async def get_by_id(self, stock_id: UUID) -> Optional[Stock]:
+        """ID로 주식을 조회합니다."""
+        result = await self.db.execute(select(Stock).where(Stock.id == stock_id))
+        return result.scalar_one_or_none()
 
-    def get_by_country(self, country: str) -> List[Stock]:
-        return self.db.query(Stock).filter(Stock.country == country).all()
+    async def get_by_ticker(self, ticker: str) -> Optional[Stock]:
+        """티커로 주식을 조회합니다."""
+        result = await self.db.execute(select(Stock).where(Stock.ticker == ticker))
+        return result.scalar_one_or_none()
 
-    def get_all(self) -> List[Stock]:
-        return self.db.query(Stock).all()
-
-    def create(self, stock_in: StockCreate) -> Stock:
-        db_stock = Stock(
-            id=str(uuid.uuid4()),
-            name=stock_in.name,
-            ticker=stock_in.ticker,
-            country=stock_in.country,
-        )
-        self.db.add(db_stock)
-        self.db.commit()
-        self.db.refresh(db_stock)
-        return db_stock
-
-    def update(self, stock: Stock, stock_in: StockUpdate) -> Stock:
-        update_data = stock_in.model_dump(exclude_unset=True)
-        for field, value in update_data.items():
-            setattr(stock, field, value)
+    async def create(self, stock: Stock) -> Stock:
+        """새로운 주식을 생성합니다."""
         self.db.add(stock)
-        self.db.commit()
-        self.db.refresh(stock)
+        await self.db.commit()
+        await self.db.refresh(stock)
         return stock
 
-    def delete(self, stock: Stock) -> None:
-        self.db.delete(stock)
-        self.db.commit()
+    async def update(self, stock: Stock) -> Stock:
+        """주식 정보를 업데이트합니다."""
+        await self.db.commit()
+        await self.db.refresh(stock)
+        return stock
+
+    async def delete(self, stock_id: UUID) -> bool:
+        """주식을 삭제합니다."""
+        stock = await self.get_by_id(stock_id)
+        if stock:
+            await self.db.delete(stock)
+            await self.db.commit()
+            return True
+        return False

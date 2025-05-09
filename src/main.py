@@ -8,20 +8,36 @@ from src.pages.login import create_login_page
 from src.pages.register import create_register_page
 from src.pages.stocks import create_stocks_page
 from src.pages.test import create_test_page
+from fastapi.middleware.cors import CORSMiddleware
+from src.api.endpoints import auth
 
 logger_main = logging.getLogger("main_debug_minimal")
 
 # 1. FastAPI 앱 생성
-app = FastAPI(title="Minimal Storage Test App")
+app = FastAPI(
+    title=settings.PROJECT_NAME,
+    version=settings.VERSION,
+    openapi_url=f"{settings.API_V1_STR}/openapi.json",
+)
+
+# CORS 설정
+app.add_middleware(
+    CORSMiddleware,
+    allow_origins=settings.BACKEND_CORS_ORIGINS,
+    allow_credentials=True,
+    allow_methods=["*"],
+    allow_headers=["*"],
+)
 
 # 미들웨어 추가 (순서 중요: 나중에 추가된 미들웨어가 먼저 실행됨)
 app.add_middleware(AuthenticationMiddleware)
 app.add_middleware(SessionMiddleware, secret_key=settings.SECRET_KEY)
 
+# API 라우터 등록
+app.include_router(auth.router, prefix=settings.API_V1_STR)
+
 # 다크 모드 설정
 ui.dark_mode(True)
-
-# 이 테스트에서는 다른 미들웨어나 API 라우터를 추가하지 않습니다.
 
 
 # 2. NiceGUI 페이지 정의
