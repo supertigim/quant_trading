@@ -309,7 +309,8 @@ async def stock_detail_page(ticker: str):
                                     )
 
                         # 차트 데이터 준비
-                        dates = [price.date for price in db_data]
+                        # 날짜 형식 수정 (시간 정보 제거)
+                        dates = [price.date.strftime("%Y-%m-%d") for price in db_data]
                         closes = [price.close for price in db_data]
                         volumes = [price.volume for price in db_data]
 
@@ -331,6 +332,7 @@ async def stock_detail_page(ticker: str):
                                 low=[price.low for price in db_data],
                                 close=closes,
                                 name="주가",
+                                hoverinfo="x+y",
                             ),
                             row=1,
                             col=1,
@@ -338,7 +340,14 @@ async def stock_detail_page(ticker: str):
 
                         # 거래량 차트
                         fig.add_trace(
-                            go.Bar(x=dates, y=volumes, name="거래량"), row=2, col=1
+                            go.Bar(
+                                x=dates,
+                                y=volumes,
+                                name="거래량",
+                                hovertemplate="날짜: %{x}<br>거래량: %{y:,}<extra></extra>",
+                            ),
+                            row=2,
+                            col=1,
                         )
 
                         # 차트 레이아웃 설정
@@ -348,6 +357,22 @@ async def stock_detail_page(ticker: str):
                             yaxis2_title="거래량",
                             xaxis_rangeslider_visible=False,
                             height=600,
+                        )
+
+                        # x축 설정 수정
+                        fig.update_xaxes(
+                            type="category",  # 카테고리 타입으로 설정하여 거래 없는 날 표시 안함
+                            rangeslider_visible=False,
+                            row=1,
+                            col=1,
+                            tickangle=45,  # 날짜 레이블 회전
+                        )
+                        fig.update_xaxes(
+                            type="category",  # 카테고리 타입으로 설정하여 거래 없는 날 표시 안함
+                            rangeslider_visible=False,
+                            row=2,
+                            col=1,
+                            tickangle=45,  # 날짜 레이블 회전
                         )
 
                         # 차트 표시
