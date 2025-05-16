@@ -264,6 +264,50 @@ async def stock_detail_page(ticker: str):
                                         )
                                     )
 
+                            latest_date = max(price.date for price in db_data)
+                            if latest_date < end:
+                                df = fdr.DataReader(ticker, latest_date)
+                                if not df.empty:
+                                    # DB에 데이터 저장
+                                    prices = []
+                                    for index, row in df.iterrows():
+                                        price = Price(
+                                            stock_id=stock.id,
+                                            date=index,
+                                            open=float(row["Open"]),
+                                            high=float(row["High"]),
+                                            low=float(row["Low"]),
+                                            close=float(row["Close"]),
+                                            volume=int(row["Volume"]),
+                                        )
+                                        prices.append(price)
+
+                                    # 중복 키 처리를 위한 upsert 로직
+                                    for price in prices:
+                                        existing_price = (
+                                            await price_repo.get_by_stock_and_date(
+                                                stock.id, price.date
+                                            )
+                                        )
+                                        if existing_price:
+                                            # 기존 데이터 업데이트
+                                            existing_price.open = price.open
+                                            existing_price.high = price.high
+                                            existing_price.low = price.low
+                                            existing_price.close = price.close
+                                            existing_price.volume = price.volume
+                                            await price_repo.update(existing_price)
+                                        else:
+                                            # 새로운 데이터 추가
+                                            await price_repo.create(price)
+
+                                    # 전체 데이터 다시 조회
+                                    db_data = (
+                                        await price_repo.get_by_stock_and_date_range(
+                                            stock.id, start, end
+                                        )
+                                    )
+
                         # 차트 데이터 준비
                         dates = [price.date for price in db_data]
                         closes = [price.close for price in db_data]

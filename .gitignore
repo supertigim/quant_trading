@@ -138,3 +138,5 @@ htmlcov/
 
 .cursorrules
 .cursor/
+
+.nicegui/
