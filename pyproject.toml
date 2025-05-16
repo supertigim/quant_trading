@@ -16,7 +16,8 @@ sqlalchemy = {extras = ["asyncio"], version = "^2.0.27"}
 alembic = "^1.13.1"
 asyncpg = "^0.29.0"
 python-jose = {extras = ["cryptography"], version = "^3.3.0"}
-passlib = {extras = ["bcrypt"], version = "^1.7.4"}
+passlib = {extras = ["bcrypt"], version = "1.7.4"}
+bcrypt = "4.0.1"
 python-multipart = "^0.0.9"
 pydantic = {extras = ["email"], version = "^2.6.1"}
 pydantic-settings = "^2.1.0"
