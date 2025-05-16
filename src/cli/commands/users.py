@@ -1,9 +1,12 @@
 import typer
 import asyncio
-from sqlalchemy import text
 import uuid
+
+from sqlalchemy import text
+
 from src.core.security import get_password_hash
 from src.db.session import AsyncSessionLocal
+
 
 app = typer.Typer()
 

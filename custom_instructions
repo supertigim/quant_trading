@@ -1,0 +1,227 @@
+{
+    "tool": {
+        "cursor": {
+            "project": {
+                "name": "quant_trading",
+                "type": "python",
+                "framework": ["fastapi", "nicegui"],
+                "database": {
+                    "type": "sqlalchemy",
+                    "name": "quant_trading",
+                    "user": "postgres",
+                    "password": "postgres",
+                },
+                "migration": {
+                    "tool": "alembic",
+                    "rules": {
+                        "safety": {
+                            "no_drop_table": true,
+                            "no_drop_column": true,
+                            "use_alter_table": true,
+                            "preserve_data": true,
+                            "require_downgrade": true,
+                            "require_testing": true,
+                        },
+                        "best_practices": {
+                            "use_temporary_columns": true,
+                            "copy_data_before_change": true,
+                            "add_columns_nullable_first": true,
+                            "update_data_before_constraints": true,
+                            "test_upgrade_downgrade": true,
+                            "backup_before_migration": true,
+                            "document_steps": true,
+                            "review_before_apply": true,
+                        },
+                        "validation": {
+                            "check_drop_statements": true,
+                            "verify_data_preservation": true,
+                            "confirm_downgrade_path": true,
+                            "test_in_development": true,
+                            "team_review": true,
+                            "document_rollback": true,
+                            "monitor_progress": true,
+                            "verify_data_integrity": true,
+                        },
+                    },
+                },
+                "package_manager": "poetry",
+                "versions": {"nicegui": ">=2.7.0", "fastapi": ">=0.109.2"},
+                "python": {"version": "3.11", "notice": "Do not use pip install"},
+                "container": {
+                    "enabled": true,
+                    "name": "quant_trading_app",
+                    "command_prefix": "docker compose exec app",
+                    "commands": {
+                        "run": "docker compose up -d",
+                        "stop": "docker compose down",
+                        "logs": "docker compose logs -f",
+                        "shell": "docker compose exec app bash",
+                        "migrate": "docker compose exec app alembic upgrade head",
+                        "makemigrations": "docker compose exec app alembic revision --autogenerate -m",
+                    },
+                },
+                "environment": {
+                    "use_env_file": true,
+                    "env_file": ".env",
+                    "required_variables": [
+                        "PROJECT_NAME",
+                        "VERSION",
+                        "API_V1_STR",
+                        "SECRET_KEY",
+                        "ALGORITHM",
+                        "ACCESS_TOKEN_EXPIRE_MINUTES",
+                        "ADMIN_USERNAME",
+                        "ADMIN_PASSWORD",
+                        "POSTGRES_HOST",
+                        "POSTGRES_USER",
+                        "POSTGRES_PASSWORD",
+                        "POSTGRES_DB",
+                        "DB_ECHO",
+                        "APP_HOST",
+                        "APP_PORT",
+                        "BACKEND_CORS_ORIGINS",
+                    ],
+                },
+            },
+            "code_style": {
+                "python": {
+                    "max_line_length": 100,
+                    "docstring_style": "google",
+                    "type_hints": true,
+                    "imports": {
+                        "order": ["standard_library", "third_party", "local"],
+                        "rules": {
+                            "group_by_type": true,
+                            "sort_within_groups": true,
+                            "separate_groups_with_newline": true,
+                            "standard_library": {
+                                "description": "Python standard library imports",
+                                "examples": [
+                                    "import asyncio",
+                                    "import logging",
+                                    "from datetime import datetime",
+                                    "from typing import List, Optional",
+                                ],
+                            },
+                            "third_party": {
+                                "description": "Third-party package imports",
+                                "examples": [
+                                    "import FinanceDataReader as fdr",
+                                    "import yfinance as yf",
+                                    "from fastapi import FastAPI",
+                                    "from nicegui import ui",
+                                    "from sqlalchemy import Column, String",
+                                ],
+                            },
+                            "local": {
+                                "description": "Local application imports",
+                                "prefix": "src",
+                                "examples": [
+                                    "from src.core.config import settings",
+                                    "from src.models.base import BaseModel",
+                                    "from src.services.stock_service import StockService",
+                                ],
+                            },
+                        },
+                        "formatting": {
+                            "no_section_comments": true,
+                            "max_line_length": 100,
+                            "wrap_long_imports": true,
+                            "prefer_absolute_imports": true,
+                        },
+                    },
+                }
+            },
+            "file_patterns": {
+                "always_include": [
+                    "alembic.ini",
+                    "pyproject.toml",
+                    "poetry.lock",
+                    "requirements/dev.txt",
+                    ".venv/**/*",
+                    ".env",
+                    "docker-compose.yml",
+                    "Dockerfile",
+                ],
+                "exclude": [
+                    "**/__pycache__/**",
+                    "**/.git/**",
+                    "**/.DS_Store",
+                    "**/archive/**",
+                ],
+            },
+            "code_structure": {
+                "src": {
+                    "api": {
+                        "description": "FastAPI routers and endpoint definitions",
+                        "patterns": ["router.py", "endpoints/*.py"],
+                    },
+                    "core": {
+                        "description": "Core settings and common functionality",
+                        "patterns": ["config.py", "security.py", "constants.py"],
+                    },
+                    "db": {
+                        "description": "Database related code",
+                        "patterns": ["base.py", "session.py", "init_db.py"],
+                    },
+                    "models": {
+                        "description": "SQLAlchemy model definitions",
+                        "patterns": ["*.py"],
+                    },
+                    "schemas": {
+                        "description": "Pydantic models and schema definitions",
+                        "patterns": ["*.py"],
+                    },
+                    "services": {
+                        "description": "Business logic and service layer",
+                        "patterns": ["*.py"],
+                    },
+                    "utils": {
+                        "description": "Utility functions and helpers",
+                        "patterns": ["*.py"],
+                    },
+                    "pages": {
+                        "description": "NiceGUI page components",
+                        "patterns": ["*.py"],
+                    },
+                }
+            },
+            "best_practices": {
+                "fastapi": {
+                    "dependency_injection": true,
+                    "async_support": true,
+                    "openapi_docs": true,
+                    "version_specific": {
+                        ">=0.109.2": {
+                            "use_pydantic_v2": true,
+                            "use_typing_extensions": true,
+                            "use_annotated_types": true,
+                            "use_async_dependencies": true,
+                            "use_modern_routing": true,
+                            "use_modern_middleware": true,
+                            "use_modern_exception_handlers": true,
+                        }
+                    },
+                },
+                "nicegui": {
+                    "component_based": true,
+                    "state_management": true,
+                    "responsive_design": true,
+                    "version_specific": {
+                        ">=1.4.21": {
+                            "use_modern_components": true,
+                            "use_quasar_components": true,
+                            "use_modern_state_management": true,
+                            "use_modern_routing": true,
+                            "use_modern_events": true,
+                            "use_modern_styling": true,
+                            "use_modern_animations": true,
+                            "use_modern_validation": true,
+                        }
+                    },
+                },
+                "sqlalchemy": {"async_engine": true, "type_annotations": true},
+            },
+        }
+    }
+}

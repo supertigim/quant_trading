@@ -1,9 +1,11 @@
 from datetime import timedelta
 from typing import Any
+
 from fastapi import APIRouter, Depends, HTTPException, status
 from fastapi.security import OAuth2PasswordRequestForm
 from sqlalchemy.ext.asyncio import AsyncSession
-from src.api.deps import get_db, authenticate_user
+
+from src.api.deps import authenticate_user, get_db
 from src.core.config import settings
 from src.core.security import create_access_token
 from src.schemas.user import Token

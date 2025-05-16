@@ -1,20 +1,21 @@
-import sys  # Import sys for flush=True
+import asyncio
 import logging
-from nicegui import ui
-from src.db.session import AsyncSessionLocal
-from src.db.repositories.stock import StockRepository
+import sys
+from datetime import datetime
+from typing import List, Optional
 from uuid import UUID
+
 import FinanceDataReader as fdr
 import yfinance as yf
-from src.models.stock import Stock
-from src.services.stock_service import StockService
-from src.schemas.stock import StockCreate, StockUpdate
-from sqlalchemy import select, desc, asc
-from typing import Optional, List
-from datetime import datetime
-import asyncio
+from nicegui import app, ui
 from nicegui.events import ValueChangeEventArguments
-from nicegui import app
+from sqlalchemy import asc, desc, select
+
+from src.db.repositories.stock import StockRepository
+from src.db.session import AsyncSessionLocal
+from src.models.stock import Stock
+from src.schemas.stock import StockCreate, StockUpdate
+from src.services.stock_service import StockService
 
 # 로깅 설정
 logging.basicConfig(level=logging.INFO)

@@ -1,17 +1,20 @@
+import asyncio
+from datetime import datetime, timedelta
 import logging
+
+import FinanceDataReader as fdr
 from nicegui import ui, app
+import pandas as pd
+import plotly.graph_objects as go
+from plotly.subplots import make_subplots
+
 from src.db.session import AsyncSessionLocal
 from src.db.repositories.stock import StockRepository
 from src.db.repositories.price import PriceRepository
 from src.models.stock import Stock
 from src.models.price import Price
 from src.services.stock_service import StockService
-import asyncio
-from datetime import datetime, timedelta
-import FinanceDataReader as fdr
-import pandas as pd
-import plotly.graph_objects as go
-from plotly.subplots import make_subplots
+
 
 # 로깅 설정
 logging.basicConfig(level=logging.INFO)

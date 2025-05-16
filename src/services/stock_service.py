@@ -1,9 +1,10 @@
+from datetime import datetime
 from typing import List, Optional
+
 from src.db.session import get_db
 from src.db.repositories.stock import StockRepository
 from src.models.stock import Stock
 from src.schemas.stock import StockCreate, StockUpdate
-from datetime import datetime
 
 
 class StockService:

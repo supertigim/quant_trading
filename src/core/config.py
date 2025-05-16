@@ -1,9 +1,9 @@
-from typing import Any, Dict, Optional, List
-from pydantic_settings import BaseSettings
-from pydantic import PostgresDsn, validator, field_validator
-from pathlib import Path
-import os
 import json
+from typing import Any, Dict, List, Optional, Union
+
+from pydantic import AnyHttpUrl, PostgresDsn, field_validator
+from pydantic_settings import BaseSettings, SettingsConfigDict
+from pathlib import Path
 
 
 class Settings(BaseSettings):

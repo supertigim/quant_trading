@@ -1,11 +1,14 @@
-from fastapi import APIRouter, Depends
-from sqlalchemy.orm import Session
-from sqlalchemy import text
-from src.db.session import get_db
-from src.core.config import settings
-import psutil
-import platform
 from datetime import datetime
+import platform
+import psutil
+
+from fastapi import APIRouter, Depends
+from sqlalchemy import text
+from sqlalchemy.orm import Session
+
+from src.core.config import settings
+from src.db.session import get_db
+
 
 router = APIRouter()
 

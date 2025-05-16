@@ -1,11 +1,14 @@
+import logging
+import uuid
+
 from nicegui import ui
+
 from src.db.session import AsyncSessionLocal
 from src.core.security import get_password_hash
 from src.core.config import settings
 from src.db.repositories.user import UserRepository
 from src.schemas.user import UserCreate
-import uuid
-import logging
+
 
 # 로깅 설정
 logging.basicConfig(level=logging.INFO)

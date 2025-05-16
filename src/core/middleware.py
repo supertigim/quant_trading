@@ -1,9 +1,12 @@
-from starlette.middleware.base import BaseHTTPMiddleware
-from starlette.requests import Request
-from starlette.responses import RedirectResponse, Response
-from starlette.types import ASGIApp
-from typing import Callable, Awaitable
 import logging
+from typing import Awaitable, Callable
+
+from fastapi import Request, Response
+from starlette.middleware.base import BaseHTTPMiddleware
+from starlette.types import ASGIApp
+
+from src.core.config import settings
+from starlette.responses import RedirectResponse
 from nicegui import ui
 
 # Public NiceGUI page paths that do not require authentication

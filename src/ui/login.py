@@ -1,15 +1,14 @@
+import logging
+
 from nicegui import ui
+from sqlalchemy import select
+
 from src.db.session import AsyncSessionLocal
 from src.core.config import settings
 from src.core.security import create_access_token, verify_password
 from src.api.deps import authenticate_user
 from src.models.user import User
-from sqlalchemy import select
-import uuid
-import logging
 
-# import nicegui # nicegui 전체 모듈 임포트 제거 또는 주석 처리
-import httpx
 
 # 로깅 설정
 logging.basicConfig(level=logging.INFO)

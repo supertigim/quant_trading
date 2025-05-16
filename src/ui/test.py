@@ -1,6 +1,8 @@
-from nicegui import ui
 import logging
+
 import FinanceDataReader as fdr
+from nicegui import ui
+
 
 # 로깅 설정
 logging.basicConfig(level=logging.INFO)

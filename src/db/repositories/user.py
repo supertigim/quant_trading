@@ -1,10 +1,12 @@
 from typing import Optional, List
+import uuid
+
 from sqlalchemy.ext.asyncio import AsyncSession
 from sqlalchemy import select
+
 from src.models.user import User
 from src.schemas.user import UserCreate, UserUpdate
 from src.core.security import get_password_hash
-import uuid
 
 
 class UserRepository:
