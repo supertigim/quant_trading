@@ -4,11 +4,11 @@ import logging
 from src.core.config import settings
 from src.core.middleware import AuthenticationMiddleware
 from starlette.middleware.sessions import SessionMiddleware
-from src.pages.login import create_login_page
-from src.pages.register import create_register_page
-from src.pages.stocks import create_stocks_page
-from src.pages.test import create_test_page
-from src.pages.stock import stock_detail_page
+from src.ui.login import create_login_page
+from src.ui.register import create_register_page
+from src.ui.stocks import create_stocks_page
+from src.ui.test import create_test_page
+from src.ui.stock import stock_detail_page
 from fastapi.middleware.cors import CORSMiddleware
 from src.api.endpoints import auth
 

@@ -248,6 +248,7 @@ export-requirements all
 │   ├── models/            # SQLAlchemy 모델
 │   ├── schemas/           # Pydantic 스키마
 │   ├── services/          # 비즈니스 로직
+│   ├── ui/                # 유저 인터페이스
 │   └── utils/             # 유틸리티 함수
 ├── docker/                # Docker 관련 파일
 │   └── Dockerfile.dev     # 개발용 Dockerfile
